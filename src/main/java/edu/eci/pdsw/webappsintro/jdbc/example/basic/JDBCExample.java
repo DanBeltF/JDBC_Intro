@@ -34,15 +34,15 @@ public class JDBCExample {
     
     public static void main(String args[]){
         try {
-            String url="jdbc:mysql://HOST:3306/BD";
+            String url="jdbc:mysql://desarrollo.is.escuelaing.edu.co:3306/bdprueba";
             String driver="com.mysql.jdbc.Driver";
-            String user="USER";
-            String pwd="PWD";
+            String user="bdprueba";
+            String pwd="bdprueba";
                         
             Class.forName(driver);
             Connection con=DriverManager.getConnection(url,user,pwd);
             con.setAutoCommit(false);
-                 
+            
             
             System.out.println("Valor total pedido 1:"+valorTotalPedido(con, 1));
             
@@ -95,14 +95,56 @@ public class JDBCExample {
      * @param codigoPedido el código del pedido
      * @return 
      */
-    public static List<String> nombresProductosPedido(Connection con, int codigoPedido){
+    public static List<String> nombresProductosPedido(Connection con, int codigoPedido) throws SQLException{
         List<String> np=new LinkedList<>();
         
         //Crear prepared statement
-        //asignar parámetros
-        //usar executeQuery
-        //Sacar resultados del ResultSet
-        //Llenar la lista y retornarla
+        
+        PreparedStatement consultNames = null;
+        
+        String consultStatement = 
+                "select nombre from ORD_PEDIDOS, ORD_DETALLES_PEDIDO, ORD_PRODUCTOS where ORD_PEDIDOS.codigo = ? and ORD_PEDIDOS.codigo = pedido_fk and producto_fk = ORD_PRODUCTOS.codigo;";
+
+        try {
+            
+            //asignar parámetros
+            
+            consultNames = con.prepareStatement(consultStatement);
+            consultNames.setInt(1, codigoPedido);
+            
+            //usar executeQuery
+            
+            ResultSet rs = consultNames.executeQuery();
+
+            while (rs.next()) {
+                
+                //Sacar resultados del ResultSet
+
+                String nombre = rs.getString("nombre");
+                
+                //Llenar la lista
+                np.add(nombre);
+                
+                System.out.println("nombres : " + nombre);
+                
+            }
+
+        } catch (SQLException ex) {
+
+            System.out.println(ex.getMessage());
+
+        } finally {
+
+            if (consultNames != null) {
+                consultNames.close();
+            }
+
+            if (con != null) {
+                con.close();
+            }
+        }
+        
+        //retornar
         
         return np;
     }
@@ -114,18 +156,57 @@ public class JDBCExample {
      * @param codigoPedido código del pedido cuyo total se calculará
      * @return el costo total del pedido (suma de: cantidades*precios)
      */
-    public static int valorTotalPedido(Connection con, int codigoPedido){
+    public static int valorTotalPedido(Connection con, int codigoPedido) throws SQLException{
         
         //Crear prepared statement
+        
+        PreparedStatement calculateCost = null;
+        
+        String calculateStatement = 
+                "";
+        try {
+            
+            //asignar parámetros
+            
+            calculateCost = con.prepareStatement(calculateStatement);
+            calculateCost.setInt(1, codigoPedido);
+            
+            //usar executeQuery
+            
+            ResultSet rs = calculateCost.executeQuery();
+
+            while (rs.next()) {
+                
+                //Sacar resultados del ResultSet
+
+                String nombre = rs.getString("nombre");
+                
+             
+                System.out.println("nombres : " + nombre);
+                
+            }
+
+        } catch (SQLException ex) {
+
+            System.out.println(ex.getMessage());
+
+        } finally {
+
+            if (calculateCost != null) {
+                calculateCost.close();
+            }
+
+            if (con != null) {
+                con.close();
+            }
+        }
+        
         //asignar parámetros
         //usar executeQuery
         //Sacar resultado del ResultSet
         
         return 0;
     }
-    
-
-    
     
     
 }
