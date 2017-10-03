@@ -57,8 +57,8 @@ public class JDBCExample {
             System.out.println("-----------------------");
             
             
-            int suCodigoECI=20134423;
-            registrarNuevoProducto(con, suCodigoECI, "SU NOMBRE", 99999999);            
+            int suCodigoECI=2104784;
+            registrarNuevoProducto(con, suCodigoECI, "Daniel B", 122);            
             con.commit();
                         
             
@@ -81,9 +81,45 @@ public class JDBCExample {
      */
     public static void registrarNuevoProducto(Connection con, int codigo, String nombre,int precio) throws SQLException{
         //Crear preparedStatement
-        //Asignar parámetros
-        //usar 'execute'
+        
+        PreparedStatement addProduct = null;
+        
+        String addStatement = "";
+        
+        try {
+            //Asignar parámetros
+            
+            addProduct = con.prepareStatement(addStatement);
+            
+            addProduct.setInt(1, precio);
+            
+            //usar 'execute'
+            
+            ResultSet rs = addProduct.executeQuery();
 
+            while (rs.next()) {
+                //Sacar resultado del ResultSet
+                
+                int cantidad = rs.getInt("cantidad");
+                
+                //System.out.println("cantidad : " + cantidad);
+                                
+            }
+
+        } catch (SQLException ex) {
+
+            System.out.println(ex.getMessage());
+
+        } finally {
+
+            if (addProduct != null) {
+                addProduct.close();
+            }
+
+            if (con != null) {
+                con.close();
+            }
+        }   
         
         con.commit();
         
@@ -94,6 +130,7 @@ public class JDBCExample {
      * @param con la conexión JDBC
      * @param codigoPedido el código del pedido
      * @return 
+     * @throws java.sql.SQLException 
      */
     public static List<String> nombresProductosPedido(Connection con, int codigoPedido) throws SQLException{
         List<String> np=new LinkedList<>();
@@ -155,17 +192,17 @@ public class JDBCExample {
      * @param con
      * @param codigoPedido código del pedido cuyo total se calculará
      * @return el costo total del pedido (suma de: cantidades*precios)
+     * @throws java.sql.SQLException
      */
     public static int valorTotalPedido(Connection con, int codigoPedido) throws SQLException{
-        
+        int costoT = 0;
         //Crear prepared statement
         
         PreparedStatement calculateCost = null;
         
         String calculateStatement = 
-                "";
+                "select cantidad, precio from ORD_PEDIDOS, ORD_DETALLES_PEDIDO, ORD_PRODUCTOS where ORD_PEDIDOS.codigo = ? and pedido_fk = ORD_PEDIDOS.codigo and producto_fk = ORD_PRODUCTOS.codigo;";
         try {
-            
             //asignar parámetros
             
             calculateCost = con.prepareStatement(calculateStatement);
@@ -176,13 +213,15 @@ public class JDBCExample {
             ResultSet rs = calculateCost.executeQuery();
 
             while (rs.next()) {
+                //Sacar resultado del ResultSet
                 
-                //Sacar resultados del ResultSet
-
-                String nombre = rs.getString("nombre");
+                int cantidad = rs.getInt("cantidad");
+                int precio = rs.getInt("precio");
                 
-             
-                System.out.println("nombres : " + nombre);
+                int valor = cantidad*precio;
+                //System.out.println("cantidad : " + cantidad);
+                
+                costoT += valor;
                 
             }
 
@@ -201,11 +240,7 @@ public class JDBCExample {
             }
         }
         
-        //asignar parámetros
-        //usar executeQuery
-        //Sacar resultado del ResultSet
-        
-        return 0;
+        return costoT;
     }
     
     
