@@ -56,9 +56,8 @@ public class JDBCExample {
             }
             System.out.println("-----------------------");
             
-            
             int suCodigoECI=2104784;
-            registrarNuevoProducto(con, suCodigoECI, "Daniel B", 122);            
+            registrarNuevoProducto(con, suCodigoECI, "Daniel Beltran", 999999);            
             con.commit();
                         
             
@@ -84,28 +83,20 @@ public class JDBCExample {
         
         PreparedStatement addProduct = null;
         
-        String addStatement = "";
+        String addStatement = "insert into ORD_PRODUCTOS(codigo, nombre, precio) values(?,?,?)";
         
         try {
             //Asignar parámetros
             
             addProduct = con.prepareStatement(addStatement);
-            
-            addProduct.setInt(1, precio);
-            
+            addProduct.setInt(1, codigo);
+            addProduct.setString(2, nombre);
+            addProduct.setInt(3, precio);
+
             //usar 'execute'
             
-            ResultSet rs = addProduct.executeQuery();
-
-            while (rs.next()) {
-                //Sacar resultado del ResultSet
-                
-                int cantidad = rs.getInt("cantidad");
-                
-                //System.out.println("cantidad : " + cantidad);
-                                
-            }
-
+            addProduct.executeUpdate();
+            
         } catch (SQLException ex) {
 
             System.out.println(ex.getMessage());
@@ -114,10 +105,6 @@ public class JDBCExample {
 
             if (addProduct != null) {
                 addProduct.close();
-            }
-
-            if (con != null) {
-                con.close();
             }
         }   
         
@@ -175,10 +162,6 @@ public class JDBCExample {
             if (consultNames != null) {
                 consultNames.close();
             }
-
-            if (con != null) {
-                con.close();
-            }
         }
         
         //retornar
@@ -201,7 +184,7 @@ public class JDBCExample {
         PreparedStatement calculateCost = null;
         
         String calculateStatement = 
-                "select cantidad, precio from ORD_PEDIDOS, ORD_DETALLES_PEDIDO, ORD_PRODUCTOS where ORD_PEDIDOS.codigo = ? and pedido_fk = ORD_PEDIDOS.codigo and producto_fk = ORD_PRODUCTOS.codigo;";
+                "select SUM(cantidad*precio) as total from ORD_PEDIDOS, ORD_DETALLES_PEDIDO, ORD_PRODUCTOS where ORD_PEDIDOS.codigo = ? and pedido_fk = ORD_PEDIDOS.codigo and producto_fk = ORD_PRODUCTOS.codigo;";
         try {
             //asignar parámetros
             
@@ -214,14 +197,10 @@ public class JDBCExample {
 
             while (rs.next()) {
                 //Sacar resultado del ResultSet
-                
-                int cantidad = rs.getInt("cantidad");
-                int precio = rs.getInt("precio");
-                
-                int valor = cantidad*precio;
+                int total = rs.getInt("total");                
                 //System.out.println("cantidad : " + cantidad);
                 
-                costoT += valor;
+                costoT = total;
                 
             }
 
@@ -233,10 +212,6 @@ public class JDBCExample {
 
             if (calculateCost != null) {
                 calculateCost.close();
-            }
-
-            if (con != null) {
-                con.close();
             }
         }
         
